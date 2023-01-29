@@ -8,17 +8,24 @@ services:
       args:
         INFLUXDB_TAG: ${INFLUXDB_TAG}
     image: "influxdb"
+    restart: always
     volumes:
       # Mount for influxdb data directory
       - ./influxdb/data:/var/lib/influxdb
       # Mount for influxdb configuration
       - ./influxdb/config/:/etc/influxdb/
+      # Mount for ssl certificate folder
+      - ./ssl:/etc/ssl
     ports:
       # The API for InfluxDB is served on port 8086
       - "8086:8086"
       - "8082:8082"
       # UDP Port
       - "8089:8089/udp"
+    
+    environment:
+      INFLUXD_TLS_CERT: /etc/ssl/certificate.crt
+      INFLUXD_TLS_KEY: /etc/ssl/private.key
 
   telegraf:
     # Full tag list: https://hub.docker.com/r/library/telegraf/tags/
@@ -28,6 +35,9 @@ services:
       args:
         TELEGRAF_TAG: ${TELEGRAF_TAG}
     image: "telegraf"
+    restart: always
+    profiles:
+      - donotstart
     environment:
       HOSTNAME: "telegraf-getting-started"
     # Telegraf requires network access to InfluxDB
@@ -49,6 +59,9 @@ services:
       args:
         KAPACITOR_TAG: ${KAPACITOR_TAG}
     image: "kapacitor"
+    restart: always
+    profiles:
+      - donotstart
     volumes:
       # Mount for kapacitor data directory
       - ./kapacitor/data/:/var/lib/kapacitor
@@ -69,6 +82,9 @@ services:
       args:
         CHRONOGRAF_TAG: ${CHRONOGRAF_TAG}
     image: "chrono_config"
+    restart: always
+    profiles:
+      - donotstart
     environment:
       RESOURCES_PATH: "/usr/share/chronograf/resources"
     volumes:
@@ -89,5 +105,6 @@ services:
   documentation:
     build:
       context: ./documentation
+    restart: always
     ports:
       - "3010:3000"
