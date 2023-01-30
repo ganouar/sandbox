@@ -1,3 +1,4 @@
 chronograf/data/
 influxdb/data/
 kapacitor/data/
+/influxdb/backup/at_*/*
